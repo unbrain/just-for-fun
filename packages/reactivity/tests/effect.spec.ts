@@ -1,0 +1,59 @@
+import { describe, expect, it, vi } from "vitest";
+import { reactive } from '../reactive';
+import { effect } from '../effect';
+
+describe('effect', () => {
+  it('happy path', () => {
+    const user = reactive({
+      age: 10
+    });
+
+    let curAge;
+
+    effect(() => {
+      curAge = user.age + 1;
+    });
+
+    expect(curAge).toBe(11);
+
+    user.age++;
+
+    expect(curAge).toBe(12);
+  })
+
+  it('return runner', () => {
+    // 1. effect(fn) -> function(runner) -> return fn
+
+    let number = 0;
+    const runner = effect(() => {
+      number++;
+      return 'number';
+    })
+
+    expect(number).toBe(1);
+    const r = runner();
+    expect(number).toBe(2);
+    expect(r).toBe('number');
+  })
+
+  it('scheduler', () => {
+    // 默认执行 run 不执行 scheduler 副作用时粗发 不执行 run 执行 scheduler
+    let dummy;
+    let run: any;
+    const scheduler = vi.fn(() => {
+      run = runner;
+    })
+    const obj = reactive({ foo: 1 });
+    const runner = effect(() => {
+      dummy = obj.foo;
+    }, { scheduler });
+
+    expect(scheduler).not.toHaveBeenCalled();
+    expect(dummy).toBe(1)
+    obj.foo++;
+    expect(scheduler).toHaveBeenCalledTimes(1);
+    expect(dummy).toBe(1);
+    run();
+    expect(dummy).toBe(2);
+  })
+})
