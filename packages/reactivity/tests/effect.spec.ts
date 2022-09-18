@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { reactive } from '../reactive';
-import { effect } from '../effect';
+import { effect, stop } from '../effect';
 
 describe('effect', () => {
   it('happy path', () => {
@@ -55,5 +55,28 @@ describe('effect', () => {
     expect(dummy).toBe(1);
     run();
     expect(dummy).toBe(2);
+  })
+
+  it('shop', () => {
+    let dummy;
+    const obj = reactive({a:1});
+    const runner = effect(()=> {
+      dummy = obj.a;
+    })
+    expect(dummy).toBe(1);
+    obj.a = 2;
+    expect(dummy).toBe(2);
+    stop(runner);
+    obj.a = 3;
+    expect(dummy).toBe(2);
+    runner();
+    expect(dummy).toBe(3);
+  })
+
+  it('events: onstop', () => {
+    const onStop = vi.fn();
+    const runner = effect(() => {}, { onStop });
+    stop(runner);
+    expect(onStop).toHaveBeenCalled();
   })
 })
