@@ -35,10 +35,14 @@ function clearupEffect(effect) {
   effect.deps.forEach(dep => {
     dep.delete(effect);
   });
-} 
+}
+
+export const needTrack = () => {
+  return shouldTrack && activeEffect;
+}
 
 export function track(target, key) {
-  if(!(shouldTrack && activeEffect)) return;
+  if(!needTrack()) return;
   // target(targetsMap) -> key -> dep(depsMap) 
   let depsMap = targetsMap.get(target)
 
@@ -54,6 +58,10 @@ export function track(target, key) {
     depsMap.set(key, dep);
   }
 
+  trackEffect(dep);
+}
+
+export function trackEffect(dep) {
   dep.add(activeEffect);
   activeEffect.deps.push(dep);
 }
@@ -62,11 +70,13 @@ export function trigger(target, key) {
   const depsMap = targetsMap.get(target);
   if (depsMap) {
     const dep = depsMap.get(key);
-    if (dep) {
-      for (let effect of dep) {
-        effect?.scheduler ? effect.scheduler() : effect.run();
-      }
-    }
+    dep && triggerEffect(dep); 
+  }
+}
+
+export function triggerEffect(dep) {
+  for (let effect of dep) {
+    effect?.scheduler ? effect.scheduler() : effect.run();
   }
 }
 
