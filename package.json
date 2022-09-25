@@ -3,6 +3,8 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "main": "dist/fun-vue.cjs",
+  "module": "dist/fun-vue.esm.js",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
