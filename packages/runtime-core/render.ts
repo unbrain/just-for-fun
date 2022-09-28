@@ -27,14 +27,20 @@ function processComponent(vnode: any, container: any) {
 
 function mountElement(vnode: any, container: any) {
   const { props, type, children } = vnode;
-  const el = ( vnode.el = document.createElement(type));
+  const el = (vnode.el = document.createElement(type)) as HTMLElement;
   for (const key in props) {
-    el.setAttribute(key, props[key]);
+    const isOn = /on[A-Z]/.test(key);
+    if (isOn) {
+      const event = key.slice(2).toLocaleLowerCase()
+      el.addEventListener(event, props[key]);
+    } else {
+      el.setAttribute(key, props[key]);
+    }
   }
   const { shapeFlag } = vnode;
   if (shapeFlag & ShapeFlags.TEXT_CHILDREN) {
     el.textContent = children;
-  } else if(shapeFlag & ShapeFlags.ARRAY_CHILDREN) {
+  } else if (shapeFlag & ShapeFlags.ARRAY_CHILDREN) {
     mountChildren(vnode, el);
   }
   container.appendChild(el);

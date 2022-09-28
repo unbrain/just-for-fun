@@ -5,8 +5,8 @@ export const App = {
     console.log(this, this.$el);
     window.$self = this;
     return h("div", { name: 1 }, [
-      h("h1", { class: "red" }, `h1, ${this.msg}`),
-      h("h2", { class: "blue" }, "h2"),
+      h("h1", { class: "red",  onClick() { console.log('click h1')} },`h1, ${this.msg}`),
+      h("h2", { class: "blue", onClick() { console.log('click h2')} }, "h2"),
     ]);
   },
   setup() {
