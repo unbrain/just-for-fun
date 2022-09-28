@@ -1,3 +1,5 @@
+import { hasOwn } from "../shared";
+
 const Map = {
   $el: (i) => {
     return i.vnode.el
@@ -6,9 +8,11 @@ const Map = {
 
 export const PublicInstanceProxyHandlers = {
   get({_: instance}, key) {
-    const { setupState, vnode } = instance;
-    if(key in setupState) {
+    const { setupState, props, vnode } = instance;
+    if(hasOwn(setupState, key)) {
       return setupState[key];
+    } else if(hasOwn(props, key)) {
+      return props[key];
     }
 
     // if(key === '$el') {
