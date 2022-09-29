@@ -26,7 +26,15 @@ export const App = {
         },
         "h2"
       ),
-      h(Foo, {count: 1}),
+      h(Foo, {
+        count: 1,
+        onAdd: (A, B) => {
+          console.log("on add", A, B);
+        },
+        onAddOne: (A, B) => {
+          console.log("on add one", A, B);
+        },
+      }),
     ]);
   },
   setup() {
