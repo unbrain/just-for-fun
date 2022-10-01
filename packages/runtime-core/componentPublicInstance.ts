@@ -3,15 +3,17 @@ import { hasOwn } from "../shared";
 const Map = {
   $el: (i) => {
     return i.vnode.el
-  }
+  },
+  $slots: i => i.slots
 }
 
 export const PublicInstanceProxyHandlers = {
-  get({_: instance}, key) {
+  get({ _: instance }, key) {
     const { setupState, props, vnode } = instance;
-    if(hasOwn(setupState, key)) {
+    // console.log(key, 'xxx', hasOwn(setupState, key), hasOwn(props, key));
+    if (hasOwn(setupState, key)) {
       return setupState[key];
-    } else if(hasOwn(props, key)) {
+    } else if (hasOwn(props, key)) {
       return props[key];
     }
 
@@ -20,8 +22,9 @@ export const PublicInstanceProxyHandlers = {
     // }
 
     const MapGetter = Map[key]
+    // console.log(key, 'xxx', Map[key], MapGetter(instance), instance);
 
-    if(MapGetter) {
+    if (MapGetter) {
       return MapGetter(instance);
     }
   }

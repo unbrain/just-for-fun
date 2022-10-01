@@ -1,3 +1,4 @@
+import { i } from "vitest/dist/index-60e2a8e1";
 import { isObject, isString } from "../shared";
 import { ShapeFlags } from '../shared/ShapeFlags'
 
@@ -10,6 +11,7 @@ export function createVNode(type, props?, children?) {
     type,
     props,
     children,
+    el: null,
     shapeFlag: getShapeFlags(type)
   }
 
@@ -17,6 +19,10 @@ export function createVNode(type, props?, children?) {
     vnode.shapeFlag |= ShapeFlags.TEXT_CHILDREN;
   } else if (isObject(children)) {
     vnode.shapeFlag |= ShapeFlags.ARRAY_CHILDREN;
+  }
+
+  if(vnode.shapeFlag & ShapeFlags.STATEFUL_COMPONENT && isObject(children)) {
+    vnode.shapeFlag |= ShapeFlags.SLOTS_CHILDREN;
   }
 
   return vnode;
