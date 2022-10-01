@@ -11,7 +11,6 @@ export const capitalize = (str: string) => {
 }
 export const camelize = (str: string) => {
   return str.replace(/-(\w)/g, (_, str: string) => {
-    console.log(str, 'str');
     return str ? str.toLocaleUpperCase() : '';
   })
 }
