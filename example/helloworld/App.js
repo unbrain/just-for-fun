@@ -1,4 +1,4 @@
-import { h } from "../../dist/fun-vue.esm.js";
+import { h, createTextVNode } from "../../dist/fun-vue.esm.js";
 import { Foo } from "./Foo.js";
 window.$self = null;
 export const App = {
@@ -9,11 +9,15 @@ export const App = {
       Foo,
       {},
       {
-        header: ({ age }) => h("p", {}, "header"),
+        header: ({ age }) => [
+          h("p", {}, "header"),
+          createTextVNode("hello, header"),
+        ],
         footer: () => h("p", {}, "footer"),
       }
     );
     return h("div", { name: 1 }, [
+      createTextVNode("hello"),
       foo,
       // h(
       //   "h1",
