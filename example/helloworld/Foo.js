@@ -1,4 +1,4 @@
-import { h, renderSlots } from "../../dist/fun-vue.esm.js";
+import { h, renderSlots, getCurrentInstance } from "../../dist/fun-vue.esm.js";
 export const Foo = {
   render() {
     const age = 25;
@@ -19,6 +19,8 @@ export const Foo = {
     return h("div", {}, app);
   },
   setup(props, { emit }) {
+    const instance = getCurrentInstance();
+    console.log(instance, 'foo');
     const emitTest = () => {
       emit("add", 1, 2);
       emit("add-one", 3, 4);
