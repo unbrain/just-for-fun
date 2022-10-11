@@ -7,7 +7,7 @@ import { Fragment, Text } from "./vnode";
 
 
 export function createRenderer(options) {
-  const { createElement, patchProps, insert } = options;
+  const { createElement: hostCreateElement, patchProp: hostPatchProp, insert: hostInsert } = options;
   function render(vnode, container) {
     patch(null, vnode, container);
   }
@@ -15,6 +15,7 @@ export function createRenderer(options) {
   function patch(newVNode, vnode, container, parent?) {
     // TODO: vnode is ele
     const { shapeFlag, type } = vnode;
+    console.log(newVNode, vnode);
     switch (type) {
       case Fragment:
         processFragment(newVNode, vnode, container, parent);
@@ -33,7 +34,33 @@ export function createRenderer(options) {
   }
 
   function processElement(newVNode, vnode: any, container: any, parent) {
-    mountElement(newVNode, vnode, container, parent);
+    if (newVNode) {
+      patchElement(newVNode, vnode, parent);
+    } else {
+      mountElement(newVNode, vnode, container, parent);
+    }
+  }
+
+  function patchElement(newVNode, vnode, container) {
+    console.log('patchElement');
+    const EXNULL = {}
+    const oldProps = newVNode.props || EXNULL;
+    const newProps = vnode.props || EXNULL;
+
+
+    const el = (vnode.el = newVNode.el);
+    patchProps(el, oldProps, newProps);
+  }
+
+  function patchProps(el, oldProps, newProps) {
+    const preProps = oldProps
+    for(const key in newProps) {
+      const preProp = oldProps[key];
+      const nextProp = newProps[key];
+      if(preProp !== nextProp) {
+        hostPatchProp(el, key, preProp, nextProp);
+      }
+    }
   }
 
   function processComponent(newVNode, vnode: any, container: any, parent) {
@@ -42,11 +69,11 @@ export function createRenderer(options) {
 
   function mountElement(newVNode, vnode: any, container: any, parent) {
     const { props, type, children } = vnode;
-    // const el = (vnode.el = document.createElement(type)) as HTMLElement;
-    const el = (vnode.el = createElement(type)) as HTMLElement;
+    // const el = (vnode.el = document.hostCreateElement(type)) as HTMLElement;
+    const el = (vnode.el = hostCreateElement(type)) as HTMLElement;
     for (const key in props) {
       const val = props[key];
-      patchProps(el, key, val);
+      hostPatchProp(el, key, null, val);
       // const isOn = /on[A-Z]/.test(key);
       // if (isOn) {
       //   const event = key.slice(2).toLocaleLowerCase()
@@ -62,7 +89,7 @@ export function createRenderer(options) {
       mountChildren(newVNode, vnode, el, parent);
     }
     // container.appendChild(el);
-    insert(el, container);
+    hostInsert(el, container);
   }
 
 
@@ -89,9 +116,9 @@ export function createRenderer(options) {
   }
 
   function setupRenderEffect(instance: any, container) {
-    const { proxy, subTree } = instance;
     effect(() => {
-      if(!instance.isMounted) {
+      const { proxy, subTree } = instance;
+      if (!instance.isMounted) {
         const subTree = (instance.subTree = instance.render.call(proxy));
         // vnode -> patch 
         // vnode -> ele -> mountEle
@@ -100,9 +127,10 @@ export function createRenderer(options) {
         instance.isMounted = true;
       } else {
         console.log('update');
-        const subTree = instance.render.call(proxy); 
-        console.log(subTree, instance.subTree);
+        const subTree = instance.render.call(proxy);
+        const pre = instance.subTree;
         instance.subTree = subTree;
+        patch(pre, subTree, container, instance)
       }
     })
   }
