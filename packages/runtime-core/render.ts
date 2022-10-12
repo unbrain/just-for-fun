@@ -7,7 +7,7 @@ import { Fragment, Text } from "./vnode";
 
 
 export function createRenderer(options) {
-  const { createElement: hostCreateElement, patchProp: hostPatchProp, insert: hostInsert } = options;
+  const { createElement: hostCreateElement, remove: hostRemove, setElementText: hostSetElementText, patchProp: hostPatchProp, insert: hostInsert } = options;
   function render(vnode, container) {
     patch(null, vnode, container);
   }
@@ -35,13 +35,13 @@ export function createRenderer(options) {
 
   function processElement(newVNode, vnode: any, container: any, parent) {
     if (newVNode) {
-      patchElement(newVNode, vnode, parent);
+      patchElement(newVNode, vnode, container, parent);
     } else {
       mountElement(newVNode, vnode, container, parent);
     }
   }
 
-  function patchElement(newVNode, vnode, container) {
+  function patchElement(newVNode, vnode, container, parent) {
     console.log('patchElement');
     const EXNULL = {}
     const oldProps = newVNode.props || EXNULL;
@@ -49,15 +49,45 @@ export function createRenderer(options) {
 
 
     const el = (vnode.el = newVNode.el);
+
+    patchChild(newVNode, vnode, container)
     patchProps(el, oldProps, newProps);
+  }
+
+  function patchChild(n1, n2, container) {
+    const preShapeFlag = n1.shapeFlag;
+    const { shapeFlag } = n2;
+
+    const c1 = n1.children
+    const c2 = n2.children
+    if (shapeFlag & ShapeFlags.TEXT_CHILDREN) {
+      if (preShapeFlag & ShapeFlags.ARRAY_CHILDREN) {
+        unmountChildren(n1.children);
+      } 
+      if (c1 !== c2) {
+        hostSetElementText(container, c2)
+      }
+    } else {
+      if(preShapeFlag & ShapeFlags.TEXT_CHILDREN) {
+        hostSetElementText(container, "")
+        mountChildren(c2, container, parent);
+      }
+    }
+  }
+
+  function unmountChildren(children) {
+    for (let i = 0; i < children.length; i++) {
+      const el = children[i].el;
+      hostRemove(el);
+    }
   }
 
   function patchProps(el, oldProps, newProps) {
     const preProps = oldProps
-    for(const key in newProps) {
+    for (const key in newProps) {
       const preProp = oldProps[key];
       const nextProp = newProps[key];
-      if(preProp !== nextProp) {
+      if (preProp !== nextProp) {
         hostPatchProp(el, key, preProp, nextProp);
       }
     }
@@ -86,7 +116,7 @@ export function createRenderer(options) {
     if (shapeFlag & ShapeFlags.TEXT_CHILDREN) {
       el.textContent = children;
     } else if (shapeFlag & ShapeFlags.ARRAY_CHILDREN) {
-      mountChildren(newVNode, vnode, el, parent);
+      mountChildren(vnode.children, el, parent);
     }
     // container.appendChild(el);
     hostInsert(el, container);
@@ -100,12 +130,12 @@ export function createRenderer(options) {
   }
 
   function processFragment(newVNode, vnode: any, container: any, parent) {
-    mountChildren(newVNode, vnode, container, parent)
+    mountChildren(vnode.children, container, parent)
   }
 
-  function mountChildren(newVNode, vnode, container, parent) {
-    for (const key in vnode.children) {
-      patch(newVNode, vnode.children[key], container, parent);
+  function mountChildren(children, container, parent) {
+    for (const key in children) {
+      patch(null, children[key], container, parent);
     }
   }
 
