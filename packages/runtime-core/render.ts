@@ -7,14 +7,16 @@ export function render(vnode, container) {
 }
 
 function patch(vnode, container) {
-  // TODO: vnode is ele
-  console.log(vnode.type);
-  const { shapeFlag } = vnode;
-  if (shapeFlag & ShapeFlags.ELEMENT) {
-    processElement(vnode, container);
-  } else if (shapeFlag & ShapeFlags.STATEFUL_COMPONENT) {
-    processComponent(vnode, container);
+  if (vnode) {
+    // TODO: vnode is ele
+    const { shapeFlag } = vnode;
+    if (shapeFlag & ShapeFlags.ELEMENT) {
+      processElement(vnode, container);
+    } else if (shapeFlag & ShapeFlags.STATEFUL_COMPONENT) {
+      processComponent(vnode, container);
+    }
   }
+
 }
 
 function processElement(vnode: any, container: any) {

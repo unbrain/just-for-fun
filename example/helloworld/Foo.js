@@ -1,21 +1,31 @@
-import { h } from "../../dist/fun-vue.esm.js";
+import { h, renderSlots } from "../../dist/fun-vue.esm.js";
 export const Foo = {
   render() {
-    const btn = h('button', {
-      onClick: this.emitTest
-    }, 'emitTest')
+    const age = 25;
+    // const btn = h(
+    //   "button",
+    //   {
+    //     onClick: this.emitTest,
+    //   },
+    //   "emitTest"
+    // );
     const foo = h("div", { name: 1 }, `foo ${this.count}`);
-    return h("div", {  }, [btn, foo]);
+    const app = [
+      renderSlots(this.$slots, "header", { age }),
+      // btn,
+      foo,
+      renderSlots(this.$slots, "footer"),
+    ]
+    return h("div", {}, app);
   },
-  setup(props, {emit}) {
-    console.log(props, 'props');
+  setup(props, { emit }) {
     const emitTest = () => {
-      console.log('emit test');
-      emit('add', 1, 2);
-      emit('add-one', 3, 4);
-    }
+      emit("add", 1, 2);
+      emit("add-one", 3, 4);
+    };
     return {
+      count: 1,
       emitTest,
-    }
+    };
   },
 };

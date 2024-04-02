@@ -3,38 +3,47 @@ import { Foo } from "./Foo.js";
 window.$self = null;
 export const App = {
   render() {
-    console.log(this, this.$el);
+    // console.log(this, this.$el, this.$slots, '9090');
     window.$self = this;
+    const foo = h(
+      Foo,
+      {},
+      {
+        header: ({ age }) => h("p", {}, "header"),
+        footer: () => h("p", {}, "footer"),
+      }
+    );
     return h("div", { name: 1 }, [
-      h(
-        "h1",
-        {
-          class: "red",
-          onClick() {
-            console.log("click h1");
-          },
-        },
-        `h1, ${this.msg}`
-      ),
-      h(
-        "h2",
-        {
-          class: "blue",
-          onClick() {
-            console.log("click h2");
-          },
-        },
-        "h2"
-      ),
-      h(Foo, {
-        count: 1,
-        onAdd: (A, B) => {
-          console.log("on add", A, B);
-        },
-        onAddOne: (A, B) => {
-          console.log("on add one", A, B);
-        },
-      }),
+      foo,
+      // h(
+      //   "h1",
+      //   {
+      //     class: "red",
+      //     onClick() {
+      //       console.log("click h1");
+      //     },
+      //   },
+      //   `h1, ${this.msg}`
+      // ),
+      // h(
+      //   "h2",
+      //   {
+      //     class: "blue",
+      //     onClick() {
+      //       console.log("click h2");
+      //     },
+      //   },
+      //   "h2"
+      // ),
+      // h(Foo, {
+      //   count: 1,
+      //   onAdd: (A, B) => {
+      //     console.log("on add", A, B);
+      //   },
+      //   onAddOne: (A, B) => {
+      //     console.log("on add one", A, B);
+      //   },
+      // }),
     ]);
   },
   setup() {
