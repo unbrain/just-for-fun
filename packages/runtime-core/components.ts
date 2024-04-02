@@ -1,9 +1,9 @@
-import { shallowReadonly } from "../reactivity/reactive";
-import { initSlots } from "./componentSlots";
-import { emit } from "./componentEmits";
-import { initProps } from "./componentProps";
-import { PublicInstanceProxyHandlers } from "./componentPublicInstance";
-import { proxyRefs } from "../reactivity";
+import { shallowReadonly } from '../reactivity/reactive'
+import { proxyRefs } from '../reactivity'
+import { initSlots } from './componentSlots'
+import { emit } from './componentEmits'
+import { initProps } from './componentProps'
+import { PublicInstanceProxyHandlers } from './componentPublicInstance'
 
 export function createComponentInstance(vnode, parent) {
   const component = {
@@ -19,34 +19,33 @@ export function createComponentInstance(vnode, parent) {
   }
   component.emit = emit.bind(null, component)
 
-  return component;
+  return component
 }
-
 
 export function setupComponent(instance) {
   // TODO: initProps initSlots
-  initProps(instance, instance.vnode.props);
-  initSlots(instance, instance.vnode.children);
+  initProps(instance, instance.vnode.props)
+  initSlots(instance, instance.vnode.children)
   setupStatefulComponent(instance)
 }
 
 function setupStatefulComponent(instance) {
-  const { type, props, emit } = instance;
-  const Component = type;
+  const { type, props, emit } = instance
+  const Component = type
   instance.proxy = new Proxy({ _: instance }, PublicInstanceProxyHandlers)
-  const { setup } = Component;
+  const { setup } = Component
 
   if (setup) {
-    setCurrentInstance(instance);
+    setCurrentInstance(instance)
     const setupResult = setup(shallowReadonly(props), { emit })
-    setCurrentInstance(null);
+    setCurrentInstance(null)
 
-    handleSetupResult(instance, setupResult);
+    handleSetupResult(instance, setupResult)
   }
 }
-let currentInstance = null;
+let currentInstance = null
 export function getCurrentInstance() {
-  return currentInstance;
+  return currentInstance
 };
 
 function setCurrentInstance(instance) {
@@ -54,18 +53,16 @@ function setCurrentInstance(instance) {
 };
 
 function handleSetupResult(instance: any, setupResult) {
-  //TODO: function
-  if (typeof setupResult === 'object') {
-    instance.setupState = proxyRefs(setupResult);
-  }
+  // TODO: function
+  if (typeof setupResult === 'object')
+    instance.setupState = proxyRefs(setupResult)
 
-  finishComponentSetup(instance);
+  finishComponentSetup(instance)
 }
 
 function finishComponentSetup(instance: any) {
-  const Component = instance.type;
+  const Component = instance.type
   // if (Component?.render) {
-  instance.render = Component.render;
-  // } 
+  instance.render = Component.render
+  // }
 }
-

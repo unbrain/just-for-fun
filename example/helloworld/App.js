@@ -1,27 +1,28 @@
 import {
-  h,
   createTextVNode,
   getCurrentInstance,
-} from "../../dist/fun-vue.esm.js";
-import { Foo } from "./Foo.js";
-window.$self = null;
+  h,
+} from '../../dist/fun-vue.esm.js'
+import { Foo } from './Foo.js'
+
+window.$self = null
 export const App = {
   render() {
     // console.log(this, this.$el, this.$slots, '9090');
-    window.$self = this;
+    window.$self = this
     const foo = h(
       Foo,
       {},
       {
         header: ({ age }) => [
-          h("p", {}, "header"),
-          createTextVNode("hello, header"),
+          h('p', {}, 'header'),
+          createTextVNode('hello, header'),
         ],
-        footer: () => h("p", {}, "footer"),
-      }
-    );
-    return h("div", { name: 1 }, [
-      createTextVNode("hello"),
+        footer: () => h('p', {}, 'footer'),
+      },
+    )
+    return h('div', { name: 1 }, [
+      createTextVNode('hello'),
       foo,
       // h(
       //   "h1",
@@ -52,13 +53,13 @@ export const App = {
       //     console.log("on add one", A, B);
       //   },
       // }),
-    ]);
+    ])
   },
   setup() {
-    const instance = getCurrentInstance();
-    console.log(instance, "app");
+    const instance = getCurrentInstance()
+    console.log(instance, 'app')
     return {
-      msg: "vue",
-    };
+      msg: 'vue',
+    }
   },
-};
+}

@@ -1,10 +1,10 @@
-import { isObject, isString } from "../shared";
+import { isObject, isString } from '../shared'
 import { ShapeFlags } from '../shared/ShapeFlags'
 
-export const Fragment = Symbol('Fragment');
-export const Text = Symbol('Text');
-const getShapeFlags = (type) => {
-  return isString(type) ? ShapeFlags.ELEMENT : ShapeFlags.STATEFUL_COMPONENT;
+export const Fragment = Symbol('Fragment')
+export const Text = Symbol('Text')
+function getShapeFlags(type) {
+  return isString(type) ? ShapeFlags.ELEMENT : ShapeFlags.STATEFUL_COMPONENT
 }
 
 export function createVNode(type, props?, children?) {
@@ -16,19 +16,17 @@ export function createVNode(type, props?, children?) {
     shapeFlag: getShapeFlags(type),
   }
 
-  if (isString(children)) {
-    vnode.shapeFlag |= ShapeFlags.TEXT_CHILDREN;
-  } else if (isObject(children)) {
-    vnode.shapeFlag |= ShapeFlags.ARRAY_CHILDREN;
-  }
+  if (isString(children))
+    vnode.shapeFlag |= ShapeFlags.TEXT_CHILDREN
+  else if (isObject(children))
+    vnode.shapeFlag |= ShapeFlags.ARRAY_CHILDREN
 
-  if (vnode.shapeFlag & ShapeFlags.STATEFUL_COMPONENT && isObject(children)) {
-    vnode.shapeFlag |= ShapeFlags.SLOTS_CHILDREN;
-  }
+  if (vnode.shapeFlag & ShapeFlags.STATEFUL_COMPONENT && isObject(children))
+    vnode.shapeFlag |= ShapeFlags.SLOTS_CHILDREN
 
-  return vnode;
+  return vnode
 }
 
 export function createTextVNode(text: string) {
-  return createVNode(Text, {}, text);
+  return createVNode(Text, {}, text)
 }

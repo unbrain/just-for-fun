@@ -1,4 +1,5 @@
-export const enum ShapeFlags {
+/* eslint-disable ts/prefer-literal-enum-member */
+export enum ShapeFlags {
   ELEMENT = 1,
   STATEFUL_COMPONENT = 1 << 1,
   TEXT_CHILDREN = 1 << 2,

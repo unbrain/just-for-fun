@@ -1,13 +1,13 @@
-import { h, ref } from "../../dist/fun-vue.esm.js";
+import { h, ref } from '../../dist/fun-vue.esm.js'
 
 export const App = {
-  name: "App",
+  name: 'App',
   setup() {
-    const count = ref(0);
+    const count = ref(0)
     const onClick = () => {
-      count.value++;
-      console.log(1, count.value);
-    };
+      count.value++
+      console.log(1, count.value)
+    }
 
     const props = ref({
       foo: 'foo',
@@ -24,7 +24,7 @@ export const App = {
 
     const change = () => {
       props.value = {
-        foo: 'foo'
+        foo: 'foo',
       }
     }
 
@@ -33,22 +33,22 @@ export const App = {
       props,
       change1,
       change2,
-      change
-    };
+      change,
+    }
   },
   render() {
     return h(
-      "div",
+      'div',
       {
-        id: "root",
-        ...this.props
+        id: 'root',
+        ...this.props,
       },
       [
-        h("div", {}, "count: " + this.count),
-        h("button", { onClick: this.change1 }, "change1"),
-        h("button", { onClick: this.change2 }, "change2"),
-        h("button", { onClick: this.change }, "change"),
-      ]
-    );
+        h('div', {}, `count: ${this.count}`),
+        h('button', { onClick: this.change1 }, 'change1'),
+        h('button', { onClick: this.change2 }, 'change2'),
+        h('button', { onClick: this.change }, 'change'),
+      ],
+    )
   },
-};
+}

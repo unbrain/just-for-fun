@@ -1,4 +1,4 @@
-import { defineConfig } from "vite";
+import { defineConfig } from 'vite'
 
 export default defineConfig({
   build: {
@@ -19,7 +19,7 @@ export default defineConfig({
       entry: './packages/index.ts',
       // input: './packages/index.ts',
       formats: ['cjs', 'esm'],
-      fileName: 'fun-vue'
+      fileName: 'fun-vue',
       // output: [
       //   {
       //     format: "cjs",
@@ -33,4 +33,4 @@ export default defineConfig({
     },
     minify: false,
   },
-});
+})
