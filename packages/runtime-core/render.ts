@@ -1,5 +1,5 @@
 import { effect } from "../reactivity/effect";
-import { isObject, isString } from "../shared";
+import { EMPTY_OBJ, isObject, isString } from "../shared";
 import { ShapeFlags } from "../shared/ShapeFlags";
 import { createComponentInstance, setupComponent } from "./components";
 import { createAppAPI } from "./createApp";
@@ -7,7 +7,7 @@ import { Fragment, Text } from "./vnode";
 
 
 export function createRenderer(options) {
-  const { createElement, patchProps, insert } = options;
+  const { createElement: hostCreateElement, patchProps: hostPatchProps, insert: hostInsert } = options;
   function render(vnode, container) {
     patch(null, vnode, container);
   }
@@ -46,9 +46,33 @@ export function createRenderer(options) {
       patchElement(n1, n2, container, parent);
     }
   }
-
   function patchElement(n1, n2, container, parent) {
-    console.log(n1, n2);
+    const oldProps = n1.props || EMPTY_OBJ;
+    const newProps = n2.props || EMPTY_OBJ;
+
+    const el = (n2.el = n1.el);
+
+    patchProps(el, oldProps, newProps)
+  }
+
+  function patchProps(el, oldProps, newProps) {
+    if (oldProps !== newProps) {
+      for (const key in newProps) {
+        const prevProp = oldProps[key];
+        const nextProp = newProps[key];
+        if (prevProp !== nextProp) {
+          hostPatchProps(el, key, prevProp, nextProp);
+        }
+      }
+      if (oldProps !== EMPTY_OBJ) {
+        for (const key in oldProps) {
+          if (!(key in newProps)) {
+            hostPatchProps(el, key, oldProps[key], null);
+          }
+        }
+      }
+
+    }
   }
 
   function processComponent(n1, n2: any, container: any, parent) {
@@ -58,17 +82,10 @@ export function createRenderer(options) {
   function mountElement(vnode: any, container: any, parent) {
     const { props, type, children } = vnode;
     // const el = (vnode.el = document.createElement(type)) as HTMLElement;
-    const el = (vnode.el = createElement(type)) as HTMLElement;
+    const el = (vnode.el = hostCreateElement(type)) as HTMLElement;
     for (const key in props) {
       const val = props[key];
-      patchProps(el, key, val);
-      // const isOn = /on[A-Z]/.test(key);
-      // if (isOn) {
-      //   const event = key.slice(2).toLocaleLowerCase()
-      //   el.addEventListener(event, props[key]);
-      // } else {
-      //   el.setAttribute(key, props[key]);
-      // }
+      hostPatchProps(el, key, null, val);
     }
     const { shapeFlag } = vnode;
     if (shapeFlag & ShapeFlags.TEXT_CHILDREN) {
@@ -77,7 +94,7 @@ export function createRenderer(options) {
       mountChildren(vnode, el, parent);
     }
     // container.appendChild(el);
-    insert(el, container);
+    hostInsert(el, container);
   }
 
 

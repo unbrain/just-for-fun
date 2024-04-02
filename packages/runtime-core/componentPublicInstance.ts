@@ -4,7 +4,7 @@ const Map = {
   $el: (i) => {
     return i.vnode.el
   },
-  $slots: i => i.slots
+  $slots: i => i.slots,
 }
 
 export const PublicInstanceProxyHandlers = {

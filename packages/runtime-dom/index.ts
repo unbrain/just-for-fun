@@ -4,13 +4,18 @@ export function createElement(type) {
   return document.createElement(type);
 }
 
-export function patchProps(el, key, val) {
+export function patchProps(el, key, val, nextVal) {
   const isOn = /on[A-Z]/.test(key);
   if (isOn) {
     const event = key.slice(2).toLocaleLowerCase()
-    el.addEventListener(event, val);
+    el.addEventListener(event, nextVal);
   } else {
-    el.setAttribute(key, val);
+    if(nextVal === null || nextVal === undefined) {
+      el.removeAttribute(key)
+    } else {
+      el.setAttribute(key, nextVal);
+
+    }
   }
 }
 
