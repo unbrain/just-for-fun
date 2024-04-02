@@ -1,22 +1,30 @@
 import { isObject, isString } from "../shared";
 import { ShapeFlags } from "../shared/ShapeFlags";
 import { createComponentInstance, setupComponent } from "./components";
+import { Fragment } from "./vnode";
 
 export function render(vnode, container) {
   patch(vnode, container);
 }
 
 function patch(vnode, container) {
-  if (vnode) {
-    // TODO: vnode is ele
-    const { shapeFlag } = vnode;
-    if (shapeFlag & ShapeFlags.ELEMENT) {
-      processElement(vnode, container);
-    } else if (shapeFlag & ShapeFlags.STATEFUL_COMPONENT) {
-      processComponent(vnode, container);
-    }
-  }
+  // TODO: vnode is ele
+  const { shapeFlag, type } = vnode;
+  switch (type) {
+    case Fragment:
+      processFragment(vnode, container);
+      break;
+    case Text:
+      processText(vnode, container);
+      break;
+    default:
 
+      if (shapeFlag & ShapeFlags.ELEMENT) {
+        processElement(vnode, container);
+      } else if (shapeFlag & ShapeFlags.STATEFUL_COMPONENT) {
+        processComponent(vnode, container);
+      }
+  }
 }
 
 function processElement(vnode: any, container: any) {
@@ -46,6 +54,17 @@ function mountElement(vnode: any, container: any) {
     mountChildren(vnode, el);
   }
   container.appendChild(el);
+}
+
+
+function processText(vnode: any, container: any) {
+  const { children } = vnode;
+  const textNode = (vnode.el = document.createTextNode(children));
+  container.append(textNode);
+}
+
+function processFragment(vnode: any, container: any) {
+  mountChildren(vnode, container)
 }
 
 function mountChildren(vnode, container) {
