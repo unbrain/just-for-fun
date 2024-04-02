@@ -12,8 +12,8 @@
     "test": "vitest"
   },
   "devDependencies": {
-    "typescript": "^4.6.4",
-    "vite": "^3.1.0",
-    "vitest": "^0.23.2"
+    "typescript": "^5.4.3",
+    "vite": "^5.2.7",
+    "vitest": "^1.4.0"
   }
 }

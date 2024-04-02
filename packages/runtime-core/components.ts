@@ -1,9 +1,9 @@
-import { type } from "os";
 import { shallowReadonly } from "../reactivity/reactive";
-import { initSlots } from "./compoenentSlots";
+import { initSlots } from "./componentSlots";
 import { emit } from "./componentEmits";
 import { initProps } from "./componentProps";
 import { PublicInstanceProxyHandlers } from "./componentPublicInstance";
+import { proxyRefs } from "../reactivity";
 
 export function createComponentInstance(vnode, parent) {
   const component = {
@@ -15,6 +15,7 @@ export function createComponentInstance(vnode, parent) {
     slots: {},
     emit: () => { },
     provides: parent ? parent.provides : {},
+    isMounted: false,
   }
   component.emit = emit.bind(null, component)
 
@@ -55,7 +56,7 @@ function setCurrentInstance(instance) {
 function handleSetupResult(instance: any, setupResult) {
   //TODO: function
   if (typeof setupResult === 'object') {
-    instance.setupState = setupResult;
+    instance.setupState = proxyRefs(setupResult);
   }
 
   finishComponentSetup(instance);
