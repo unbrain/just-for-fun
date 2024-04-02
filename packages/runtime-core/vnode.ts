@@ -14,7 +14,7 @@ export function createVNode(type, props?, children?) {
     props,
     children,
     el: null,
-    shapeFlag: getShapeFlags(type)
+    shapeFlag: getShapeFlags(type),
   }
 
   if (isString(children)) {
