@@ -1,25 +1,25 @@
-import { shallowReadonly } from '../reactivity/reactive'
-import { proxyRefs } from '../reactivity'
+import { proxyRefs, shallowReadonly } from '@zy/reactivity'
 import { initSlots } from './componentSlots'
 import { emit } from './componentEmits'
 import { initProps } from './componentProps'
 import { PublicInstanceProxyHandlers } from './componentPublicInstance'
 
 export function createComponentInstance(vnode, parent) {
-  const component = {
+  const instance = {
     vnode,
     parent,
     type: vnode.type,
     setupState: {},
     el: null,
     slots: {},
-    emit: () => { },
     provides: parent ? parent.provides : {},
     isMounted: false,
+    emit: (_string, ..._args) => { },
   }
-  component.emit = emit.bind(null, component)
+  
+  instance.emit = emit.bind(null, instance)
 
-  return component
+  return instance
 }
 
 export function setupComponent(instance) {

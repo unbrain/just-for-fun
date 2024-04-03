@@ -1,6 +1,5 @@
-import { effect } from '../reactivity/effect'
-import { EMPTY_OBJ } from '../shared'
-import { ShapeFlags } from '../shared/ShapeFlags'
+import { effect } from '@zy/reactivity'
+import { EMPTY_OBJ, ShapeFlags } from '@zy/shared'
 import { createComponentInstance, setupComponent } from './components'
 import { createAppAPI } from './createApp'
 import { Fragment, Text } from './vnode'
@@ -69,7 +68,7 @@ export function createRenderer(options) {
     }
   }
 
-  function processComponent(n1, n2: any, container: any, parent) {
+  function processComponent(_n1, n2: any, container: any, parent) {
     mountComponent(n2, container, parent)
   }
 
@@ -91,13 +90,13 @@ export function createRenderer(options) {
     hostInsert(el, container)
   }
 
-  function processText(n1, n2: any, container: any) {
+  function processText(_n1, n2: any, container: any) {
     const { children } = n2
     const textNode = (n2.el = document.createTextNode(children))
     container.append(textNode)
   }
 
-  function processFragment(n1, n2: any, container: any, parent) {
+  function processFragment(_n1, n2: any, container: any, parent) {
     mountChildren(n2, container, parent)
   }
 

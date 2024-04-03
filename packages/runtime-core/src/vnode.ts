@@ -1,5 +1,4 @@
-import { isObject, isString } from '../shared'
-import { ShapeFlags } from '../shared/ShapeFlags'
+import { ShapeFlags, isObject, isString } from '@zy/shared'
 
 export const Fragment = Symbol('Fragment')
 export const Text = Symbol('Text')

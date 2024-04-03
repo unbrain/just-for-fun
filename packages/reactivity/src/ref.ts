@@ -1,4 +1,4 @@
-import { hasChange, isObject } from '../shared'
+import { hasChange, isObject } from '@zy/shared'
 import { needTrack, trackEffect, triggerEffect } from './effect'
 import { reactive } from './reactive'
 

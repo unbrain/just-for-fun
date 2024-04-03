@@ -1,4 +1,4 @@
-import { hasOwn } from '../shared'
+import { hasOwn } from '@zy/shared'
 
 const Map = {
   $el: (i) => {

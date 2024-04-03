@@ -1,4 +1,4 @@
-import { extend } from '../shared/index'
+import { extend } from '@zy/shared'
 
 const targetsMap = new Map()
 let activeEffect
@@ -90,6 +90,6 @@ export function effect(fn, options: any = {}) {
   extend(_effect, options)
   _effect.run()
   const runner = _effect.run.bind(_effect)
-  runner.effect = _effect
+  // runner.effect = _effect
   return runner
 }

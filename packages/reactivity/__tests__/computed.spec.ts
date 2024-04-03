@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
-import { reactive } from '../reactive'
-import { computed } from '../computed'
+import { reactive } from '../src/reactive'
+import { computed } from '../src/computed'
 
 describe('computed', () => {
   it('hh', () => {

@@ -16,7 +16,7 @@ export default defineConfig({
     //   ]
     // }
     lib: {
-      entry: './packages/index.ts',
+      entry: './packages/vue/src/index.ts',
       // input: './packages/index.ts',
       formats: ['cjs', 'esm'],
       fileName: 'fun-vue',

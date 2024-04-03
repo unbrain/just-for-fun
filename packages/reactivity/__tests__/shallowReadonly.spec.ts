@@ -1,24 +1,20 @@
 import { describe, expect, it, vi } from 'vitest'
-import { isProxy, isReadonly, readonly } from '../reactive'
+import { isReadonly, shallowReadonly } from '../src/reactive'
 
-describe('readonly', () => {
+describe('shallowReadonly', () => {
   it('test', () => {
     const original = { foo: 1, baz: { a: 1 } }
-    const wrapped = readonly(original)
+    const wrapped = shallowReadonly(original)
     expect(wrapped).not.toBe(original)
     expect(wrapped.foo).toBe(1)
     expect(isReadonly(wrapped)).toBe(true)
-    expect(isReadonly(wrapped.baz)).toBe(true)
-    expect(isProxy(wrapped)).toBe(true)
-    expect(isProxy(wrapped.baz)).toBe(true)
-    expect(isReadonly(original)).toBe(false)
-    expect(isProxy(original)).toBe(false)
+    expect(isReadonly(wrapped.baz)).toBe(false)
   })
 
   it('get warn', () => {
     console.warn = vi.fn()
     const original = { foo: 1 }
-    const wrapped = readonly(original)
+    const wrapped = shallowReadonly (original)
     wrapped.foo = 2
     expect(console.warn).toBeCalled()
   })

@@ -1,10 +1,10 @@
-import { createRenderer } from '../runtime-core'
+import { createRenderer } from '@zy/runtime-core'
 
 export function createElement(type) {
   return document.createElement(type)
 }
 
-export function patchProps(el, key, val, nextVal) {
+export function patchProps(el, key, _val, nextVal) {
   const isOn = /on[A-Z]/.test(key)
   if (isOn) {
     const event = key.slice(2).toLocaleLowerCase()
@@ -32,4 +32,4 @@ export function createApp(...args) {
   return renderer.createApp(...args)
 }
 
-export * from '../runtime-core'
+export * from '@zy/runtime-core'

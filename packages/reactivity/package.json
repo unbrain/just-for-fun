@@ -1,0 +1,14 @@
+{
+  "name": "@zy/reactivity",
+  "version": "1.0.0",
+  "description": "",
+  "author": "",
+  "license": "ISC",
+  "keywords": [],
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "@zy/shared": "workspace:^1.0.0"
+  }
+}

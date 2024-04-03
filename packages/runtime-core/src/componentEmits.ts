@@ -1,4 +1,4 @@
-import { camelize, capitalize } from '../shared'
+import { camelize, capitalize } from '@zy/shared'
 
 export function emit(instance, event: string, ...args) {
   const { props } = instance
