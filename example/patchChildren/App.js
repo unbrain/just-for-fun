@@ -1,6 +1,8 @@
 import { h } from '../../dist/fun-vue.esm.js'
-import TextToArray from './TextToArray.js'
-
+// import TextToArray from './TextToArray.js'
+// import ArrayToText from './ArrayTotext.js'
+// import TextToText from './TextToText.js'
+import ArrayToArray from './ArrayToArray.js'
 export default {
   name: 'App',
   setup() {},
@@ -13,9 +15,9 @@ export default {
       // 老的是 text 新的是 text
       // h(TextToText),
       // 老的是 text 新的是 array
-      h(TextToArray),
+      // h(TextToArray),
       // 老的是 array 新的是 array
-      // h(ArrayToArray),
+      h(ArrayToArray),
     ])
   },
 }

@@ -5,7 +5,7 @@ import { createAppAPI } from './createApp'
 import { Fragment, Text } from './vnode'
 
 export function createRenderer(options) {
-  const { createElement: hostCreateElement, patchProps: hostPatchProps, insert: hostInsert } = options
+  const { createElement: hostCreateElement, patchProps: hostPatchProps, insert: hostInsert, remove: hostRemove, setElementText: hostSetElementText } = options
   function render(vnode, container) {
     patch(null, vnode, container)
   }
@@ -40,15 +40,54 @@ export function createRenderer(options) {
     if (!n1)
       mountElement(n2, container, parent)
     else
-      patchElement(n1, n2)
+      patchElement(n1, n2, parent)
   }
-  function patchElement(n1, n2) {
+  function patchElement(n1, n2, parentComponent) {
+    // eslint-disable-next-line no-console
+    console.log(n1, n2)
     const oldProps = n1.props || EMPTY_OBJ
     const newProps = n2.props || EMPTY_OBJ
 
     const el = (n2.el = n1.el)
 
+    patchChildren(n1, n2, el, parentComponent)
     patchProps(el, oldProps, newProps)
+  }
+
+  function patchChildren(n1: any, n2: any, container, parentComponent) {
+    const prevShapeFlag = n1.shapeFlag
+    const c1 = n1.children
+    const c2 = n2.children
+    const shapeFlag = n2.shapeFlag
+    if (shapeFlag & ShapeFlags.TEXT_CHILDREN) {
+      if (prevShapeFlag & ShapeFlags.ARRAY_CHILDREN) {
+        // clear children
+        unmountChildren(c1)
+        // set text
+        hostSetElementText(container, c2)
+      }
+      else if (prevShapeFlag & ShapeFlags.TEXT_CHILDREN) {
+        if (c1 !== c2)
+          hostSetElementText(container, c2)
+      }
+    }
+    else if (shapeFlag & ShapeFlags.ARRAY_CHILDREN) {
+      if (prevShapeFlag & ShapeFlags.TEXT_CHILDREN) {
+        hostSetElementText(container, '')
+        mountChildren(c2, container, parentComponent)
+      }
+      else if (prevShapeFlag & ShapeFlags.ARRAY_CHILDREN) {
+        unmountChildren(c1)
+        mountChildren(c2, container, parentComponent)
+      }
+    }
+  }
+
+  function unmountChildren(children) {
+    for (let i = 0; i < children.length; i++) {
+      const el = children[i].el
+      hostRemove(el)
+    }
   }
 
   function patchProps(el, oldProps, newProps) {
@@ -84,7 +123,7 @@ export function createRenderer(options) {
     if (shapeFlag & ShapeFlags.TEXT_CHILDREN)
       el.textContent = children
     else if (shapeFlag & ShapeFlags.ARRAY_CHILDREN)
-      mountChildren(vnode, el, parent)
+      mountChildren(vnode.children, el, parent)
 
     // container.appendChild(el);
     hostInsert(el, container)
@@ -97,12 +136,12 @@ export function createRenderer(options) {
   }
 
   function processFragment(_n1, n2: any, container: any, parent) {
-    mountChildren(n2, container, parent)
+    mountChildren(n2.children, container, parent)
   }
 
-  function mountChildren(vnode, container, parent) {
-    for (const key in vnode.children)
-      patch(null, vnode.children[key], container, parent)
+  function mountChildren(children, container, parent) {
+    for (const key in children)
+      patch(null, children[key], container, parent)
   }
 
   function mountComponent(vnode: any, container, parent) {
