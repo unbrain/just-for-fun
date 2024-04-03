@@ -3,6 +3,7 @@ import { EMPTY_OBJ, ShapeFlags } from '@zy/shared'
 import { createComponentInstance, setupComponent } from './components'
 import { createAppAPI } from './createApp'
 import { Fragment, Text } from './vnode'
+import { queueJobs } from './scheduler'
 
 export function createRenderer(options) {
   const { createElement: hostCreateElement, patchProps: hostPatchProps, insert: hostInsert, remove: hostRemove, setElementText: hostSetElementText } = options
@@ -129,10 +130,32 @@ export function createRenderer(options) {
       }
     }
     else if (point <= e1 && point > e2) {
-      console.log('in')
       while (point <= e1) {
         hostRemove(c1[point].el)
         point++
+      }
+    }
+    else {
+      // 中间对比
+      const toBePatch = e2 - e1 + 1
+      let patched = 0
+      const keyToNewIndexMap = new Map()
+      for (let i = point; i < len2; i++)
+        keyToNewIndexMap.set(c2[i].key, i)
+
+      for (let i = point; i < len1; i++) {
+        const prevChild = c1[i]
+        const newIndex = keyToNewIndexMap.get(prevChild.key)
+        if (patched >= toBePatch) {
+          hostRemove(prevChild.el)
+          continue
+        }
+
+        if (newIndex !== undefined) {
+          patch(prevChild, c2[newIndex], container, parentComponent, null)
+          patched++
+        }
+        else { hostRemove(prevChild.el) }
       }
     }
     console.log(point, e1, e2)
@@ -206,7 +229,7 @@ export function createRenderer(options) {
   }
 
   function setupRenderEffect(instance: any, container, anchor) {
-    effect(() => {
+    instance.update = effect(() => {
       if (!instance.isMounted) {
         const { proxy } = instance
         const subTree = (instance.subTree = instance.render.call(proxy))
@@ -226,6 +249,10 @@ export function createRenderer(options) {
         // vnode -> ele -> mountEle
         patch(prevSubTree, subTree, container, instance, anchor)
       }
+    }, {
+      scheduler() {
+        queueJobs(instance.update)
+      },
     })
   }
 
