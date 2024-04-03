@@ -1,6 +1,14 @@
 import { defineConfig } from 'vite'
-
+import path from 'path';
 export default defineConfig({
+  resolve: {
+    alias: [
+      {
+        find: /@zy\/([\w-]*)/,
+        replacement: path.resolve(__dirname, "packages") + "/$1/src"
+      },
+    ]
+  },
   build: {
     // rollupOptions: {
     //   input: './packages/index.ts',
