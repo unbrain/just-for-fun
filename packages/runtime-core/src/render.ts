@@ -7,7 +7,7 @@ import { Fragment, Text } from './vnode'
 export function createRenderer(options) {
   const { createElement: hostCreateElement, patchProps: hostPatchProps, insert: hostInsert, remove: hostRemove, setElementText: hostSetElementText } = options
   function render(vnode, container) {
-    patch(null, vnode, container)
+    patch(null, vnode, container, null, null)
   }
 
   /**
@@ -17,12 +17,12 @@ export function createRenderer(options) {
    * @param container
    * @param parent
    */
-  function patch(n1, n2, container, parent?) {
+  function patch(n1, n2, container, parent?, anchor?) {
     // TODO: vnode is ele
     const { shapeFlag, type } = n2
     switch (type) {
       case Fragment:
-        processFragment(n1, n2, container, parent)
+        processFragment(n1, n2, container, parent, anchor)
         break
       case Text:
         processText(n1, n2, container)
@@ -30,19 +30,19 @@ export function createRenderer(options) {
       default:
 
         if (shapeFlag & ShapeFlags.ELEMENT)
-          processElement(n1, n2, container, parent)
+          processElement(n1, n2, container, parent, anchor)
         else if (shapeFlag & ShapeFlags.STATEFUL_COMPONENT)
-          processComponent(n1, n2, container, parent)
+          processComponent(n1, n2, container, parent, anchor)
     }
   }
 
-  function processElement(n1, n2: any, container: any, parent) {
+  function processElement(n1, n2: any, container: any, parent, parentAnchor) {
     if (!n1)
-      mountElement(n2, container, parent)
+      mountElement(n2, container, parent, parentAnchor)
     else
-      patchElement(n1, n2, parent)
+      patchElement(n1, n2, parent, parentAnchor)
   }
-  function patchElement(n1, n2, parentComponent) {
+  function patchElement(n1, n2, parentComponent, parentAnchor) {
     // eslint-disable-next-line no-console
     console.log(n1, n2)
     const oldProps = n1.props || EMPTY_OBJ
@@ -50,11 +50,11 @@ export function createRenderer(options) {
 
     const el = (n2.el = n1.el)
 
-    patchChildren(n1, n2, el, parentComponent)
+    patchChildren(n1, n2, el, parentComponent, parentAnchor)
     patchProps(el, oldProps, newProps)
   }
 
-  function patchChildren(n1: any, n2: any, container, parentComponent) {
+  function patchChildren(n1: any, n2: any, container, parentComponent, parentAnchor) {
     const prevShapeFlag = n1.shapeFlag
     const c1 = n1.children
     const c2 = n2.children
@@ -74,13 +74,68 @@ export function createRenderer(options) {
     else if (shapeFlag & ShapeFlags.ARRAY_CHILDREN) {
       if (prevShapeFlag & ShapeFlags.TEXT_CHILDREN) {
         hostSetElementText(container, '')
-        mountChildren(c2, container, parentComponent)
+        mountChildren(c2, container, parentComponent, parentAnchor)
       }
       else if (prevShapeFlag & ShapeFlags.ARRAY_CHILDREN) {
-        unmountChildren(c1)
-        mountChildren(c2, container, parentComponent)
+        patchKeyedChildren(c1, c2, container, parentComponent, parentAnchor)
+        // unmountChildren(c1)
+        // mountChildren(c2, container, parentComponent)
       }
     }
+  }
+
+  function patchKeyedChildren(c1, c2, container, parentComponent, parentAnchor) {
+    const len1 = c1.length
+    const len2 = c2.length
+    let point = 0
+
+    function isSameVnode(n1, n2) {
+      return n1.type === n2.type && n1.key === n2.key
+    }
+    while (point < len1 && point < len2) {
+      const n1 = c1[point]
+      const n2 = c2[point]
+
+      if (isSameVnode(n1, n2)) {
+        patch(n1, n2, container, parentComponent, parentAnchor)
+        point++
+      }
+      else {
+        break
+      }
+    }
+
+    let e1 = len1 - 1; let e2 = len2 - 1
+    while (e1 >= point && e2 >= point) {
+      const n1 = c1[e1]
+      const n2 = c2[e2]
+
+      if (isSameVnode(n1, n2)) {
+        patch(n1, n2, container, parentComponent, parentAnchor)
+        e1--
+        e2--
+      }
+      else {
+        break
+      }
+    }
+    if (point > e1 && point <= e2) {
+      const nextPos = e2 + 1
+      const anchor = nextPos < len2 ? c2[nextPos].el : null
+
+      while (point <= e2) {
+        patch(null, c2[point], container, parentComponent, anchor)
+        point++
+      }
+    }
+    else if (point <= e1 && point > e2) {
+      console.log('in')
+      while (point <= e1) {
+        hostRemove(c1[point].el)
+        point++
+      }
+    }
+    console.log(point, e1, e2)
   }
 
   function unmountChildren(children) {
@@ -107,11 +162,11 @@ export function createRenderer(options) {
     }
   }
 
-  function processComponent(_n1, n2: any, container: any, parent) {
-    mountComponent(n2, container, parent)
+  function processComponent(_n1, n2: any, container: any, parent, anchor) {
+    mountComponent(n2, container, parent, anchor)
   }
 
-  function mountElement(vnode: any, container: any, parent) {
+  function mountElement(vnode: any, container: any, parent, anchor) {
     const { props, type, children } = vnode
     // const el = (vnode.el = document.createElement(type)) as HTMLElement;
     const el = (vnode.el = hostCreateElement(type)) as HTMLElement
@@ -123,10 +178,10 @@ export function createRenderer(options) {
     if (shapeFlag & ShapeFlags.TEXT_CHILDREN)
       el.textContent = children
     else if (shapeFlag & ShapeFlags.ARRAY_CHILDREN)
-      mountChildren(vnode.children, el, parent)
+      mountChildren(vnode.children, el, parent, anchor)
 
     // container.appendChild(el);
-    hostInsert(el, container)
+    hostInsert(el, container, anchor)
   }
 
   function processText(_n1, n2: any, container: any) {
@@ -135,29 +190,29 @@ export function createRenderer(options) {
     container.append(textNode)
   }
 
-  function processFragment(_n1, n2: any, container: any, parent) {
-    mountChildren(n2.children, container, parent)
+  function processFragment(_n1, n2: any, container: any, parent, anchor) {
+    mountChildren(n2.children, container, parent, anchor)
   }
 
-  function mountChildren(children, container, parent) {
+  function mountChildren(children, container, parent, anchor) {
     for (const key in children)
-      patch(null, children[key], container, parent)
+      patch(null, children[key], container, parent, anchor)
   }
 
-  function mountComponent(vnode: any, container, parent) {
+  function mountComponent(vnode: any, container, parent, anchor) {
     const instance = createComponentInstance(vnode, parent)
     setupComponent(instance)
-    setupRenderEffect(instance, container)
+    setupRenderEffect(instance, container, anchor)
   }
 
-  function setupRenderEffect(instance: any, container) {
+  function setupRenderEffect(instance: any, container, anchor) {
     effect(() => {
       if (!instance.isMounted) {
         const { proxy } = instance
         const subTree = (instance.subTree = instance.render.call(proxy))
         // vnode -> patch
         // vnode -> ele -> mountEle
-        patch(null, subTree, container, instance)
+        patch(null, subTree, container, instance, anchor)
 
         instance.vnode.el = subTree.el
         instance.isMounted = true
@@ -169,7 +224,7 @@ export function createRenderer(options) {
         instance.subTree = subTree
         // vnode -> patch
         // vnode -> ele -> mountEle
-        patch(prevSubTree, subTree, container, instance)
+        patch(prevSubTree, subTree, container, instance, anchor)
       }
     })
   }
