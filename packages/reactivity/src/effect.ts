@@ -89,7 +89,7 @@ export function effect(fn, options: any = {}) {
   const _effect = new ReactiveEffect(fn, options.scheduler)
   extend(_effect, options)
   _effect.run()
-  const runner = _effect.run.bind(_effect)
-  // runner.effect = _effect
+  const runner = _effect.run.bind(_effect) as any;
+  runner.effect = _effect
   return runner
 }

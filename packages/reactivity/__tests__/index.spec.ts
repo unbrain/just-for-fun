@@ -1,6 +1,5 @@
-// import { it, expect } from 'vitest'
-// import { add } from '../src/index'
+import { it, expect } from 'vitest'
 
-// it.skip('init', () => {
-//   expect(add(2, 2)).toBe(4)
-// })
+it.skip('init', () => {
+  expect(2+2).toBe(4)
+})
