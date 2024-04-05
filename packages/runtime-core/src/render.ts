@@ -107,18 +107,16 @@ export function createRenderer(options) {
     }
 
     let e1 = len1 - 1; let e2 = len2 - 1
-    while (e1 >= point && e2 >= point) {
+    while (point <= e1 && point <= e2) {
       const n1 = c1[e1]
       const n2 = c2[e2]
 
-      if (isSameVnode(n1, n2)) {
+      if (isSameVnode(n1, n2))
         patch(n1, n2, container, parentComponent, parentAnchor)
-        e1--
-        e2--
-      }
-      else {
+      else
         break
-      }
+      e1--
+      e2--
     }
     if (point > e1 && point <= e2) {
       const nextPos = e2 + 1
@@ -137,13 +135,16 @@ export function createRenderer(options) {
     }
     else {
       // 中间对比
-      const toBePatch = e2 - e1 + 1
+      const toBePatch = e2 - point + 1
       let patched = 0
       const keyToNewIndexMap = new Map()
+      const newIndexToOldIndexMap = Array.from({ length: toBePatch }).fill(0) as number[]
+      let move = false
+      let maxIndex = 0
       for (let i = point; i < len2; i++)
         keyToNewIndexMap.set(c2[i].key, i)
 
-      for (let i = point; i < len1; i++) {
+      for (let i = point; i <= e1; i++) {
         const prevChild = c1[i]
         const newIndex = keyToNewIndexMap.get(prevChild.key)
         if (patched >= toBePatch) {
@@ -152,13 +153,32 @@ export function createRenderer(options) {
         }
 
         if (newIndex !== undefined) {
+          if (newIndex >= maxIndex)
+            maxIndex = newIndex
+          else
+            move = true
           patch(prevChild, c2[newIndex], container, parentComponent, null)
+          newIndexToOldIndexMap[newIndex - point] = i + 1
           patched++
         }
         else { hostRemove(prevChild.el) }
       }
+
+      const increasingNewIndexSequence = move ? getSequence(newIndexToOldIndexMap) : []
+      let j = increasingNewIndexSequence.length - 1
+      for (let i = toBePatch - 1; i >= 0; i--) {
+        const nextIndex = point + i
+        const nextChild = c2[nextIndex]
+        const anchor = nextIndex + 1 < len2 ? c2[nextIndex + 1].el : null
+        if (newIndexToOldIndexMap[i] === 0) { patch(null, nextChild, container, parentComponent, anchor) }
+        else if (move) {
+          if (j < 0 || i !== increasingNewIndexSequence[j])
+            hostInsert(nextChild.el, container, anchor)
+          else
+            j--
+        }
+      }
     }
-    console.log(point, e1, e2)
   }
 
   function unmountChildren(children) {
@@ -259,4 +279,44 @@ export function createRenderer(options) {
   return {
     createApp: createAppAPI(render),
   }
+}
+
+function getSequence(arr: number[]): number[] {
+  const p = arr.slice()
+  const result = [0]
+  let i, j, u, v, c
+  const len = arr.length
+  for (i = 0; i < len; i++) {
+    const arrI = arr[i]
+    if (arrI !== 0) {
+      j = result[result.length - 1]
+      if (arr[j] < arrI) {
+        p[i] = j
+        result.push(i)
+        continue
+      }
+      u = 0
+      v = result.length - 1
+      while (u < v) {
+        c = (u + v) >> 1
+        if (arr[result[c]] < arrI)
+          u = c + 1
+        else
+          v = c
+      }
+      if (arrI < arr[result[u]]) {
+        if (u > 0)
+          p[i] = result[u - 1]
+
+        result[u] = i
+      }
+    }
+  }
+  u = result.length
+  v = result[u - 1]
+  while (u-- > 0) {
+    result[u] = v
+    v = p[v]
+  }
+  return result
 }

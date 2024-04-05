@@ -24,7 +24,7 @@ function queueFlush() {
 
 function flushJobs() {
   isFlushPending = false
-  // flushPreFlushCbs()
+  flushPreFlushCbs()
   let job
   // eslint-disable-next-line no-cond-assign
   while (job = queue.shift())
