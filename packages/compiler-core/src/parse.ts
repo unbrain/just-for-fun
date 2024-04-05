@@ -2,6 +2,7 @@ import { NodeTypes } from './ast'
 
 interface Context {
   source: string
+  // children: any[],
 }
 
 enum TagTypes {
@@ -11,27 +12,47 @@ enum TagTypes {
 
 export function baseParse(content: string) {
   const context = createParseContent(content)
-  return createRoot(parseChildren(context))
+  return createRoot(parseChildren(context, []))
 }
 
-function parseChildren(context: Context) {
+function parseChildren(context: Context, ancestors: string[]) {
   const nodes: any[] = []
-  const s = context.source
-  let node
-  if (s.startsWith('{{')) { node = parseInterpolation(context) }
-  else if (s.startsWith('<')) {
-    if (/[a-z]/i.test(context.source[1]))
-      node = parseElement(context)
+  while (!isEnd(context, ancestors)) {
+    const s = context.source
+    let node
+    if (s.startsWith('{{')) { node = parseInterpolation(context) }
+    else if (s.startsWith('<')) {
+      if (/[a-z]/i.test(context.source[1]))
+        node = parseElement(context, ancestors)
+    }
+    else {
+      node = parseText(context)
+    }
+    nodes.push(node)
   }
-  else {
-    node = parseText(context)
-  }
-  nodes.push(node)
   return nodes
 }
 
-function parseText(context) {
-  const content = parseTextData(context, context.length)
+function isEnd(context: Context, ancestors) {
+  const s = context.source
+  for (let i = ancestors.length - 1; i >= 0; i--) {
+    const tag = ancestors[i]
+    if (startsWithEndTagOpen(s, tag))
+      return true
+  }
+  return !s
+}
+
+function parseText(context: Context) {
+  let endIndex = context.source.length
+  const endToken = ['{{', '</']
+  for (let i = 0; i < endToken.length; i++) {
+    const index = context.source.indexOf(endToken[i])
+    if (index !== -1 && endIndex > index)
+      endIndex = index
+  }
+
+  const content = parseTextData(context, endIndex)
   return {
     type: NodeTypes.TEXT,
     content,
@@ -46,11 +67,21 @@ function parseTextData(context, length) {
   return content
 }
 
-function parseElement(context) {
-  const element = parseTag(context, TagTypes.START)
-  parseTag(context, TagTypes.END)
+function parseElement(context, ancestors: string[] = []) {
+  const element: any = parseTag(context, TagTypes.START)
+  ancestors.push(element.tag)
+  element.children = parseChildren(context, ancestors)
+  ancestors.pop()
+  if (startsWithEndTagOpen(context.source, element.tag))
+    parseTag(context, TagTypes.END)
+  else
+    throw new Error('tag is not closed')
 
   return element
+}
+
+function startsWithEndTagOpen(source, tag) {
+  return source.startsWith('</') && source.slice(2, 2 + tag.length) === tag
 }
 
 function parseTag(context, type: TagTypes) {
@@ -81,6 +112,7 @@ function parseInterpolation(context) {
   advanceBy(context, openDelimiter.length)
   const rawContent = parseTextData(context, rawContentLength)
   const content = rawContent.trim()
+  advanceBy(context, closeDelimiter.length)
   return {
     type: NodeTypes.INTERPOLATION,
     content: {
